@@ -10,7 +10,7 @@ Layered configuration from files and environment variables with zero dependencie
 
 ```toml
 [dependencies]
-philiprehberger-config-loader = "0.1.6"
+philiprehberger-config-loader = "0.1.7"
 ```
 
 ## Usage
@@ -96,6 +96,14 @@ Later layers override earlier ones:
 | `.get_float(key)` | Get as `f64` |
 | `.get_bool(key)` | Get as `bool` |
 | `.keys()` | Iterate over all keys |
+
+
+## Development
+
+```bash
+cargo test
+cargo clippy -- -D warnings
+```
 
 ## License
 
