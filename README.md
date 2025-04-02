@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/philiprehberger-config-loader.svg)](https://crates.io/crates/philiprehberger-config-loader)
 [![License](https://img.shields.io/github/license/philiprehberger/rs-config-loader)](LICENSE)
 
-Layered configuration from files and environment variables with zero dependencies.
+Layered configuration from files and environment variables
 
 ## Installation
 
