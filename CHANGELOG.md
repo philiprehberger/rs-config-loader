@@ -1,0 +1,9 @@
+# Changelog
+
+## 0.1.0 (2026-03-15)
+
+- Initial release
+- Layered configuration: defaults, files, environment variables, manual overrides
+- Built-in TOML-subset parser (strings, integers, floats, booleans, string arrays, sections)
+- Environment variable mapping with prefix and double-underscore nesting
+- Zero dependencies
