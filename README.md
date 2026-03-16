@@ -10,7 +10,7 @@ Layered configuration from files and environment variables with zero dependencie
 
 ```toml
 [dependencies]
-philiprehberger-config-loader = "0.1"
+philiprehberger-config-loader = "0.1.6"
 ```
 
 ## Usage

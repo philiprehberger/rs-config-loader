@@ -1,6 +1,6 @@
 [package]
 name = "philiprehberger-config-loader"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["Philip Rehberger"]
 description = "Layered configuration from files and environment variables"
