@@ -2,7 +2,11 @@
 
 [![CI](https://github.com/philiprehberger/rs-config-loader/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rs-config-loader/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/philiprehberger-config-loader.svg)](https://crates.io/crates/philiprehberger-config-loader)
+[![GitHub release](https://img.shields.io/github/v/release/philiprehberger/rs-config-loader)](https://github.com/philiprehberger/rs-config-loader/releases)
+[![Last updated](https://img.shields.io/github/last-commit/philiprehberger/rs-config-loader)](https://github.com/philiprehberger/rs-config-loader/commits/main)
 [![License](https://img.shields.io/github/license/philiprehberger/rs-config-loader)](LICENSE)
+[![Bug Reports](https://img.shields.io/github/issues/philiprehberger/rs-config-loader/bug)](https://github.com/philiprehberger/rs-config-loader/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
+[![Feature Requests](https://img.shields.io/github/issues/philiprehberger/rs-config-loader/enhancement)](https://github.com/philiprehberger/rs-config-loader/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Layered configuration from files and environment variables
@@ -11,7 +15,7 @@ Layered configuration from files and environment variables
 
 ```toml
 [dependencies]
-philiprehberger-config-loader = "0.1.8"
+philiprehberger-config-loader = "0.1.9"
 ```
 
 ## Usage
@@ -106,6 +110,13 @@ cargo test
 cargo clippy -- -D warnings
 ```
 
+## Support
+
+If you find this package useful, consider giving it a star on GitHub — it helps motivate continued maintenance and development.
+
+[![LinkedIn](https://img.shields.io/badge/Philip%20Rehberger-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/philiprehberger)
+[![More packages](https://img.shields.io/badge/more-open%20source%20packages-blue)](https://philiprehberger.com/open-source-packages)
+
 ## License
 
-MIT
+[MIT](LICENSE)
