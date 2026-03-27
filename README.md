@@ -3,6 +3,7 @@
 [![CI](https://github.com/philiprehberger/rs-config-loader/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rs-config-loader/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/philiprehberger-config-loader.svg)](https://crates.io/crates/philiprehberger-config-loader)
 [![License](https://img.shields.io/github/license/philiprehberger/rs-config-loader)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Layered configuration from files and environment variables
 
