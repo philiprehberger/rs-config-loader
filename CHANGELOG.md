@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0 (2026-04-27)
+
+- Add `Config::get_array(key)` typed getter returning `Option<&[String]>` for `ConfigValue::Array` values
+- Add `ConfigBuilder::add_file_optional(path)` that silently skips missing files (parse errors still surface)
+
 ## 0.1.10 (2026-03-31)
 
 - Standardize README to 3-badge format with emoji Support section

@@ -193,6 +193,32 @@ impl Config {
         }
     }
 
+    /// Get a string array configuration value by key.
+    ///
+    /// Returns `None` if the key does not exist or is not an array. The returned
+    /// slice borrows from the underlying configuration; clone the items if you
+    /// need to extend the lifetime.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use philiprehberger_config_loader::{ConfigBuilder, ConfigValue};
+    ///
+    /// let config = ConfigBuilder::new()
+    ///     .default("hosts", vec!["a".to_string(), "b".to_string()])
+    ///     .build()
+    ///     .unwrap();
+    ///
+    /// let hosts = config.get_array("hosts").unwrap();
+    /// assert_eq!(hosts, &["a".to_string(), "b".to_string()]);
+    /// ```
+    pub fn get_array(&self, key: &str) -> Option<&[String]> {
+        match self.values.get(key) {
+            Some(ConfigValue::Array(a)) => Some(a.as_slice()),
+            _ => None,
+        }
+    }
+
     /// Iterate over all configuration keys.
     pub fn keys(&self) -> impl Iterator<Item = &String> {
         self.values.keys()
@@ -202,7 +228,10 @@ impl Config {
 /// Source of configuration values, applied in order during build.
 enum ConfigSource {
     /// A TOML file to be parsed at build time.
-    File(String),
+    ///
+    /// When `optional` is `true`, the source is silently skipped if the file
+    /// does not exist; when `false`, a missing file produces a [`ConfigError::FileNotFound`].
+    File { path: String, optional: bool },
     /// Environment variables with the given prefix.
     EnvPrefix(String),
 }
@@ -256,8 +285,27 @@ impl ConfigBuilder {
     ///
     /// The file is parsed when [`build`](Self::build) is called. File values
     /// override defaults but are overridden by environment variables and manual overrides.
+    /// A missing file produces a [`ConfigError::FileNotFound`] error during `build`.
     pub fn add_file(mut self, path: &str) -> Self {
-        self.sources.push(ConfigSource::File(path.to_string()));
+        self.sources.push(ConfigSource::File {
+            path: path.to_string(),
+            optional: false,
+        });
+        self
+    }
+
+    /// Add a TOML file as a configuration source, silently skipping it if the
+    /// file does not exist.
+    ///
+    /// Useful for layering an environment-specific override file on top of a
+    /// committed defaults file: `.add_file("config.toml").add_file_optional("config.local.toml")`.
+    /// A missing optional file is *not* an error; a present-but-unparseable
+    /// optional file still produces a [`ConfigError::ParseError`].
+    pub fn add_file_optional(mut self, path: &str) -> Self {
+        self.sources.push(ConfigSource::File {
+            path: path.to_string(),
+            optional: true,
+        });
         self
     }
 
@@ -296,10 +344,16 @@ impl ConfigBuilder {
         // Layer 2 & 3: sources in order (files then env prefixes)
         for source in &self.sources {
             match source {
-                ConfigSource::File(path) => {
-                    let content = fs::read_to_string(path).map_err(|_| {
-                        ConfigError::FileNotFound(path.clone())
-                    })?;
+                ConfigSource::File { path, optional } => {
+                    let content = match fs::read_to_string(path) {
+                        Ok(c) => c,
+                        Err(_) => {
+                            if *optional {
+                                continue;
+                            }
+                            return Err(ConfigError::FileNotFound(path.clone()));
+                        }
+                    };
                     let parsed = parse_toml(&content, path)?;
                     for (k, v) in parsed {
                         values.insert(k, v);
@@ -857,5 +911,99 @@ port = 3000
         let builder = ConfigBuilder::new();
         let config = builder.build().unwrap();
         assert_eq!(config.keys().count(), 0);
+    }
+
+    #[test]
+    fn get_array_returns_array_values() {
+        let dir = std::env::temp_dir().join("rs_config_loader_test_get_array");
+        let _ = fs::create_dir_all(&dir);
+        let file_path = dir.join("array.toml");
+        {
+            let mut f = fs::File::create(&file_path).unwrap();
+            writeln!(f, "tags = [\"a\", \"b\", \"c\"]").unwrap();
+        }
+
+        let config = ConfigBuilder::new()
+            .add_file(file_path.to_str().unwrap())
+            .build()
+            .unwrap();
+
+        let tags = config.get_array("tags").unwrap();
+        assert_eq!(tags, &["a".to_string(), "b".to_string(), "c".to_string()]);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn get_array_returns_none_on_type_mismatch() {
+        let config = ConfigBuilder::new()
+            .default("port", 8080_i64)
+            .build()
+            .unwrap();
+
+        assert_eq!(config.get_array("port"), None);
+        assert_eq!(config.get_array("missing"), None);
+    }
+
+    #[test]
+    fn get_array_from_default() {
+        let config = ConfigBuilder::new()
+            .default("hosts", vec!["a".to_string(), "b".to_string()])
+            .build()
+            .unwrap();
+
+        let hosts = config.get_array("hosts").unwrap();
+        assert_eq!(hosts, &["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
+    fn add_file_optional_skips_missing_file() {
+        let config = ConfigBuilder::new()
+            .default("host", "localhost")
+            .add_file_optional("/nonexistent/path/optional.toml")
+            .build()
+            .unwrap();
+
+        assert_eq!(config.get_string("host"), Some("localhost"));
+    }
+
+    #[test]
+    fn add_file_optional_loads_when_present() {
+        let dir = std::env::temp_dir().join("rs_config_loader_test_optional_present");
+        let _ = fs::create_dir_all(&dir);
+        let file_path = dir.join("optional.toml");
+        {
+            let mut f = fs::File::create(&file_path).unwrap();
+            writeln!(f, "host = \"override\"").unwrap();
+        }
+
+        let config = ConfigBuilder::new()
+            .default("host", "localhost")
+            .add_file_optional(file_path.to_str().unwrap())
+            .build()
+            .unwrap();
+
+        assert_eq!(config.get_string("host"), Some("override"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn add_file_optional_still_errors_on_parse_failure() {
+        let dir = std::env::temp_dir().join("rs_config_loader_test_optional_bad");
+        let _ = fs::create_dir_all(&dir);
+        let file_path = dir.join("bad.toml");
+        {
+            let mut f = fs::File::create(&file_path).unwrap();
+            writeln!(f, "this is not valid toml").unwrap();
+        }
+
+        let result = ConfigBuilder::new()
+            .add_file_optional(file_path.to_str().unwrap())
+            .build();
+
+        assert!(matches!(result, Err(ConfigError::ParseError { .. })));
+
+        let _ = fs::remove_dir_all(&dir);
     }
 }

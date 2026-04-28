@@ -10,7 +10,7 @@ Layered configuration from files and environment variables
 
 ```toml
 [dependencies]
-philiprehberger-config-loader = "0.1.9"
+philiprehberger-config-loader = "0.2.0"
 ```
 
 ## Usage
@@ -81,7 +81,8 @@ Later layers override earlier ones:
 |--------|-------------|
 | `ConfigBuilder::new()` | Create a new builder |
 | `.default(key, value)` | Set a default value |
-| `.add_file(path)` | Add a TOML file source |
+| `.add_file(path)` | Add a TOML file source (errors if missing) |
+| `.add_file_optional(path)` | Add a TOML file source, silently skipped if missing |
 | `.add_env_prefix(prefix)` | Add env var source with prefix |
 | `.set(key, value)` | Manual override (highest priority) |
 | `.build()` | Build the `Config` |
@@ -95,6 +96,7 @@ Later layers override earlier ones:
 | `.get_int(key)` | Get as `i64` |
 | `.get_float(key)` | Get as `f64` |
 | `.get_bool(key)` | Get as `bool` |
+| `.get_array(key)` | Get as `&[String]` |
 | `.keys()` | Iterate over all keys |
 
 ## Development
